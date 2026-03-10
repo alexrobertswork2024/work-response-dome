@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+  <title>WORK RESPONSE — Civic Reserve Platform</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app" id="app">
+  <div class="particles" id="particles"></div>
+
+  <nav class="nav" id="main-nav">
+    <div class="nav-logo" onclick="navigate('home')">
+      <div class="logo-mark">WR</div>
+      WORK RESPONSE
+    </div>
+    <div class="nav-center" id="nav-center"></div>
+    <div class="nav-right">
+      <div class="nav-notif" id="notif-btn" onclick="toggleNotif()">
+        🔔<div class="notif-dot" id="notif-dot"></div>
+      </div>
+      <div class="nav-pill">Toronto Pilot</div>
+      <div class="nav-avatar" onclick="navigate('profile')">AR</div>
+    </div>
+  </nav>
+
+  <div class="notif-panel" id="notif-panel" style="display:none"></div>
+  <div class="toast-container" id="toast-container"></div>
+  <div class="modal-overlay" id="modal-overlay" style="display:none" onclick="closeModal(event)">
+    <div class="modal-box" id="modal-box"></div>
+  </div>
+
+  <main id="main-content"></main>
+  <nav class="mobile-nav" id="mobile-nav"></nav>
+</div>
+
+<!-- Load order: security first, then data, then pages, then app -->
+<script src="security.js"></script>
+<script src="data.js"></script>
+<script src="pages.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
