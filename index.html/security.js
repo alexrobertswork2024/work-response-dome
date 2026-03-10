@@ -11,6 +11,9 @@
 
 "use strict";
 
+// New strict CSP baseline for static hosting.
+const CSP_POLICY = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self';";
+
 const SECURITY_PROTOCOL = Object.freeze({
 
   // ── ODSP SHIELD ──────────────────────────────────────────────────────
@@ -208,14 +211,7 @@ const SECURITY_PROTOCOL = Object.freeze({
    * netlify.toml / vercel.json / _headers respectively.
    */
   requiredHttpHeaders: Object.freeze({
-    "Content-Security-Policy":
-      "default-src 'self'; " +
-      "script-src 'self'; " +
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
-      "font-src 'self' https://fonts.gstatic.com; " +
-      "img-src 'self' data:; " +
-      "connect-src 'self'; " +
-      "frame-ancestors 'none';",
+    "Content-Security-Policy": CSP_POLICY,
     "X-Content-Type-Options":    "nosniff",
     "X-Frame-Options":           "DENY",
     "Referrer-Policy":           "strict-origin-when-cross-origin",
