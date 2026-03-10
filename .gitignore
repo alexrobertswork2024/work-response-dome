@@ -23,6 +23,19 @@ build/
 # Environment
 .env
 .env.*
+*.local
+
+# Secrets and keys
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+
+# Temp and backups
+*.tmp
+*.temp
+*.bak
 
 # Python
 __pycache__/
