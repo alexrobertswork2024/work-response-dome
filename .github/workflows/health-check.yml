@@ -1,4 +1,4 @@
-name: Health Check
+name: CI Health Check
 
 on:
   push:
@@ -20,6 +20,14 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+
+      - name: Validate JavaScript Syntax
+        run: |
+          set -e
+          find . -name "*.js" -not -path "*/node_modules/*" -print0 | while IFS= read -r -d '' file; do
+            echo "Checking $file"
+            node --check "$file"
+          done
 
       - name: Run Workspace Health Check
         run: node script.js
