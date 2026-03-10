@@ -39,9 +39,9 @@ function renderNav() {
   const pages = ['dashboard','shifts','map','workers','analytics','payroll','comms','events'];
   c.innerHTML = pages.map(p => {
     const info = NAV_PAGES.find(x => x.id === p);
-    return `<button class="nav-btn ${currentPage===p?'active':''}" onclick="navigate('${p}')">${info ? `${esc(info.icon)} ${esc(info.label)}` : esc(p)}</button>`;
+    return `<button class="nav-btn ${currentPage===p?'active':''}" data-nav="${esc(p)}">${info ? `${esc(info.icon)} ${esc(info.label)}` : esc(p)}</button>`;
   }).join('') +
-  `<button class="nav-btn ${currentPage==='health'?'active':''}" onclick="navigate('health')" title="Health">🛡️</button>`;
+  `<button class="nav-btn ${currentPage==='health'?'active':''}" data-nav="health" title="Health">🛡️</button>`;
 }
 
 function renderMobileNav() {
@@ -50,7 +50,7 @@ function renderMobileNav() {
   const pages = ['home','dashboard','shifts','map','workers','health'];
   el.innerHTML = pages.map(p => {
     const info = NAV_PAGES.find(x => x.id === p) || { icon:'🛡️', label:'Health' };
-    return `<button class="mobile-nav-item ${currentPage===p?'active':''}" onclick="navigate('${p}')"><span style="font-size:1.15rem">${esc(info.icon)}</span>${esc(info.label)}</button>`;
+    return `<button class="mobile-nav-item ${currentPage===p?'active':''}" data-nav="${esc(p)}"><span style="font-size:1.15rem">${esc(info.icon)}</span>${esc(info.label)}</button>`;
   }).join('');
 }
 
@@ -62,7 +62,7 @@ function toggleNotif() {
   if (notifOpen) {
     panel.style.display = 'block';
     panel.innerHTML = `
-    <div class="notif-hd"><div class="notif-title">Notifications</div><button class="btn btn-xs btn-ghost" onclick="toggleNotif()">✕</button></div>
+    <div class="notif-hd"><div class="notif-title">Notifications</div><button class="btn btn-xs btn-ghost" data-action="toggle-notif">✕</button></div>
     ${NOTIFICATIONS.map(n=>`
     <div class="notif-item ${n.unread?'unread':''}">
       <div class="notif-icon" style="background:${esc(n.iconBg)}">${esc(n.icon)}</div>
@@ -70,7 +70,7 @@ function toggleNotif() {
       <div class="notif-text" style="font-size:.75rem;margin-top:.2rem">${esc(n.text)}</div>
       <div class="notif-time">${esc(n.time)}</div></div>
     </div>`).join('')}
-    <div style="padding:.6rem 1rem;text-align:center"><button class="btn btn-xs btn-outline" onclick="toggleNotif()">Mark all read</button></div>`;
+    <div style="padding:.6rem 1rem;text-align:center"><button class="btn btn-xs btn-outline" data-action="toggle-notif">Mark all read</button></div>`;
     const dot = document.getElementById('notif-dot');
     if (dot) setTimeout(() => dot.style.display = 'none', 800);
   } else {
@@ -104,7 +104,7 @@ function showToast(title, sub, icon, color) {
   div.innerHTML = `
     <div class="toast-icon" style="background:rgba(${hexToRgb(color)},.15);color:${esc(color)}">${esc(icon)}</div>
     <div class="toast-body"><div class="toast-title">${esc(title)}</div><div class="toast-sub">${esc(sub)}</div></div>
-    <div class="toast-close" onclick="removeToast('${id}')">✕</div>
+    <div class="toast-close" data-action="remove-toast" data-toast-id="${esc(id)}">✕</div>
     <div class="toast-progress" style="--toast-color:${esc(color)};--toast-dur:${dur}s"></div>`;
   div.onclick = () => removeToast(id);
   c.appendChild(div);
@@ -234,8 +234,77 @@ document.addEventListener('keydown', e => {
   }
 });
 
+function bindUiEvents() {
+  document.addEventListener('click', e => {
+    const navTarget = e.target.closest('[data-nav]');
+    if (navTarget) {
+      navigate(navTarget.getAttribute('data-nav'));
+      return;
+    }
+
+    const actionEl = e.target.closest('[data-action]');
+    if (!actionEl) {
+      if (e.target.id === 'modal-overlay') closeModal(e);
+      return;
+    }
+
+    const action = actionEl.getAttribute('data-action');
+    if (action === 'toggle-notif') toggleNotif();
+    if (action === 'close-modal') closeModal();
+    if (action === 'show-modal') {
+      const type = actionEl.getAttribute('data-modal-type');
+      const rawId = actionEl.getAttribute('data-id');
+      showModal(type, rawId ? Number(rawId) : undefined);
+    }
+    if (action === 'accept-shift') {
+      e.stopPropagation();
+      const id = Number(actionEl.getAttribute('data-shift-id'));
+      acceptShift(id);
+    }
+    if (action === 'accept-shift-and-close') {
+      const id = Number(actionEl.getAttribute('data-shift-id'));
+      acceptShift(id);
+      closeModal();
+    }
+    if (action === 'shift-tab') {
+      const label = actionEl.getAttribute('data-label') || 'All Shifts';
+      switchShiftTab(actionEl, label);
+    }
+    if (action === 'track-map') navigate('map');
+    if (action === 'send-chat') sendChatMsgBtn();
+    if (action === 'export-report') showToast('Report generated','Weekly KPI summary ready','📋','#f59e0b');
+    if (action === 'export-workers') showToast('Export ready','Worker roster CSV downloaded','📋','#4db8ff');
+    if (action === 'message-worker') showToast('Message sent','Direct message opened','💬','#4db8ff');
+    if (action === 'create-shift') {
+      closeModal();
+      showToast('Shift created','New shift posted to worker pool','✅','#22c55e');
+    }
+    if (action === 'toggle-switch') {
+      actionEl.classList.toggle('on');
+      actionEl.classList.toggle('off');
+    }
+    if (action === 'remove-toast') {
+      const id = actionEl.getAttribute('data-toast-id');
+      removeToast(id);
+    }
+    if (action === 'select-thread') {
+      const id = Number(actionEl.getAttribute('data-thread-id'));
+      selectThread(id, actionEl);
+    }
+  });
+
+  document.addEventListener('input', e => {
+    if (e.target && e.target.id === 'worker-search') filterWorkers(e.target.value);
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.target && e.target.id === 'chat-input' && e.key === 'Enter') sendChatMsgBtn();
+  });
+}
+
 // ── INIT ──────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  bindUiEvents();
   AppLog.info('app init', 'v2-hardened');
   AppLog.security('CSP active · XSS sanitizer loaded · error boundary active · interval manager active');
   initParticles();

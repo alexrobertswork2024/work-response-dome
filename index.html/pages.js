@@ -21,8 +21,8 @@ function renderHome() {
         </h1>
         <p class="hero-sub stagger-3">Toronto's on-demand municipal workforce platform. Verified workers. Real-time dispatch. GPS-confirmed delivery. Built for the City, powered by community.</p>
         <div class="hero-ctas stagger-4">
-          <button class="btn btn-lg btn-ice" onclick="navigate('dashboard')">City Dashboard</button>
-          <button class="btn btn-lg btn-outline" onclick="navigate('shifts')">View Shifts</button>
+          <button class="btn btn-lg btn-ice" data-nav="dashboard">City Dashboard</button>
+          <button class="btn btn-lg btn-outline" data-nav="shifts">View Shifts</button>
         </div>
         <div class="hazard-row stagger-5">
           <span class="hz-pill hz-snow">❄️ Windrow Clearance</span>
@@ -85,7 +85,7 @@ function renderDashboard() {
         <span>Operations Overview</span>
         <div style="display:flex;gap:.5rem;align-items:center">
           <span class="live-badge"><span class="blink" style="width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0"></span>LIVE</span>
-          <button class="btn btn-sm btn-amber" onclick="showToast('Report generated','Weekly KPI summary ready','📋','#f59e0b')">Export Report</button>
+          <button class="btn btn-sm btn-amber" data-action="export-report">Export Report</button>
         </div>
       </div>
 
@@ -96,7 +96,7 @@ function renderDashboard() {
           <div class="dispatch-ev-title">Storm Level 3 — Active Deployment</div>
           <div class="dispatch-ev-meta">47 workers dispatched · Wards 3, 5, 12 · Issued 04:15 today</div>
         </div>
-        <button class="btn-dispatch" onclick="navigate('map')">Live Map →</button>
+        <button class="btn-dispatch" data-nav="map">Live Map →</button>
       </div>
 
       <!-- KPI STRIP -->
@@ -187,11 +187,11 @@ function renderShifts() {
     <div class="admin-main">
       <div class="admin-title page-enter">
         Shift Board
-        <button class="btn btn-sm btn-ice" onclick="showModal('new-shift')">+ New Shift</button>
+        <button class="btn btn-sm btn-ice" data-action="show-modal" data-modal-type="new-shift">+ New Shift</button>
       </div>
       <div class="tab-row" id="shift-tabs">
         ${['All Shifts','Active','Open','Complete'].map((t,i) => `
-        <button class="tab-btn ${i===0?'active':''}" onclick="switchShiftTab(this,'${t}')">${t}</button>`).join('')}
+        <button class="tab-btn ${i===0?'active':''}" data-action="shift-tab" data-label="${esc(t)}">${esc(t)}</button>`).join('')}
       </div>
       <div id="shift-list" class="stagger-1">
         ${SHIFTS.map(s => renderShiftRow(s)).join('')}
@@ -206,7 +206,7 @@ function renderShiftRow(s) {
     urgent: 'badge-red',   complete: 'badge-muted'
   }[s.status] || 'badge-muted';
   return `
-  <div class="shift-row-v15" style="--shift-color:${s.color}" onclick="showModal('shift-detail',${s.id})">
+  <div class="shift-row-v15" style="--shift-color:${s.color}" data-action="show-modal" data-modal-type="shift-detail" data-id="${esc(s.id)}">
     <div class="shift-icon">${s.icon}</div>
     <div class="shift-info">
       <div class="shift-name">${esc(s.title)}</div>
@@ -217,7 +217,7 @@ function renderShiftRow(s) {
       <span class="badge ${statusBadge}">${esc(s.status)}</span>
       <span style="font-size:.75rem;color:var(--muted2);font-family:'IBM Plex Mono',monospace">${esc(s.filled)}/${esc(s.workers)}</span>
       ${s.status === 'open' || s.status === 'urgent'
-        ? `<button class="btn btn-xs btn-ice" onclick="event.stopPropagation();acceptShift(${s.id})">Accept</button>`
+        ? `<button class="btn btn-xs btn-ice" data-action="accept-shift" data-shift-id="${esc(s.id)}">Accept</button>`
         : ''}
     </div>
   </div>`;
@@ -287,8 +287,8 @@ function renderWorkers() {
       <div class="admin-title">
         Workers <span style="font-size:1rem;color:var(--muted2)">(${WORKERS.length})</span>
         <div style="display:flex;gap:.5rem">
-          <input class="filter-input" id="worker-search" placeholder="Search workers…" oninput="filterWorkers(this.value)" style="width:180px"/>
-          <button class="btn btn-sm btn-ice" onclick="showToast('Export ready','Worker roster CSV downloaded','📋','#4db8ff')">Export</button>
+          <input class="filter-input" id="worker-search" placeholder="Search workers…" style="width:180px"/>
+          <button class="btn btn-sm btn-ice" data-action="export-workers">Export</button>
         </div>
       </div>
       <div id="workers-table-wrap" class="stagger-1">
@@ -330,8 +330,8 @@ function renderWorkersTable(workers) {
           <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--green2)">$${esc(w.earnings.toLocaleString())}</td>
           <td>
             <div style="display:flex;gap:.3rem">
-              <button class="btn btn-xs btn-navy" onclick="showModal('worker-detail',${w.id})">View</button>
-              <button class="btn btn-xs btn-outline" onclick="showToast('Message sent','Direct message opened','💬','#4db8ff')">Msg</button>
+              <button class="btn btn-xs btn-navy" data-action="show-modal" data-modal-type="worker-detail" data-id="${esc(w.id)}">View</button>
+              <button class="btn btn-xs btn-outline" data-action="message-worker">Msg</button>
             </div>
           </td>
         </tr>`).join('')}
@@ -490,7 +490,7 @@ function renderComms() {
         <span class="badge badge-green" style="margin-left:.4rem">3 active</span>
       </div>
       ${CHAT_THREADS.map((t,i) => `
-      <div class="chat-thread ${i===0?'active':''}" onclick="selectThread(${t.id},this)">
+      <div class="chat-thread ${i===0?'active':''}" data-action="select-thread" data-thread-id="${esc(t.id)}">
         <div class="chat-av" style="background:${t.avBg};color:${t.avFg}">${t.av}</div>
         <div class="chat-thread-info">
           <div class="chat-thread-name">${t.name}</div>
@@ -509,7 +509,7 @@ function renderComms() {
           <div class="chat-hd-name">${activeThread.name}</div>
           <div class="chat-hd-sub">${activeThread.status === 'onshift' ? '🟢 On Shift' : '🟡 Available'} · ${WORKERS.find(w=>w.initials===activeThread.av)?.ward || 'Dispatch'}</div>
         </div>
-        <button class="btn btn-xs btn-outline" onclick="navigate('map')">📍 Track</button>
+        <button class="btn btn-xs btn-outline" data-action="track-map">📍 Track</button>
       </div>
       <div class="chat-msgs" id="chat-msgs">
         ${msgs.map(m => `
@@ -519,8 +519,8 @@ function renderComms() {
         </div>`).join('')}
       </div>
       <div class="chat-input-row">
-        <input class="chat-input" id="chat-input" placeholder="Type a message…" onkeydown="sendChatMsg(event)"/>
-        <button class="btn btn-sm btn-ice" onclick="sendChatMsgBtn()">Send</button>
+        <input class="chat-input" id="chat-input" placeholder="Type a message…"/>
+        <button class="btn btn-sm btn-ice" data-action="send-chat">Send</button>
       </div>
     </div>
   </div>`;
@@ -535,7 +535,7 @@ function renderEvents() {
       <div class="admin-title">Events & Incidents</div>
       <div class="stagger-1">
         ${EVENTS.map(e => `
-        <div class="ev-card sev-${e.sev}" onclick="showModal('event-detail',${e.id})">
+        <div class="ev-card sev-${e.sev}" data-action="show-modal" data-modal-type="event-detail" data-id="${esc(e.id)}">
           <div style="display:flex;align-items:flex-start;gap:.85rem">
             <div style="font-size:2rem;flex-shrink:0">${e.icon}</div>
             <div style="flex:1">
@@ -593,7 +593,7 @@ function renderProfile() {
           <div class="settings-lbl">${s.lbl}</div>
           <div class="settings-sub">${s.sub}</div>
         </div>
-        <div class="toggle ${s.on?'on':'off'}" onclick="this.classList.toggle('on');this.classList.toggle('off')">
+        <div class="toggle ${s.on?'on':'off'}" data-action="toggle-switch">
           <div class="toggle-thumb"></div>
         </div>
       </div>`).join('')}
@@ -621,7 +621,7 @@ function getModalContent(type, id) {
         <div class="modal-title">${s.icon} ${s.title}</div>
         <div class="modal-subtitle">${s.ward} · ${s.time}</div>
       </div>
-      <button class="btn btn-xs btn-ghost" onclick="closeModal()">✕</button>
+      <button class="btn btn-xs btn-ghost" data-action="close-modal">✕</button>
     </div>
     <div class="modal-body">
       <div class="g2" style="margin-bottom:1rem">
@@ -640,7 +640,7 @@ function getModalContent(type, id) {
         <span class="badge badge-muted">${s.type}</span>
       </div>
       ${s.status === 'open' || s.status === 'urgent'
-        ? `<button class="btn btn-md btn-green" style="width:100%" onclick="acceptShift(${s.id});closeModal()">✓ Accept This Shift</button>`
+        ? `<button class="btn btn-md btn-green" style="width:100%" data-action="accept-shift-and-close" data-shift-id="${esc(s.id)}">✓ Accept This Shift</button>`
         : `<button class="btn btn-md btn-outline" style="width:100%">View Details</button>`}
     </div>`;
   }
@@ -656,7 +656,7 @@ function getModalContent(type, id) {
           <div class="modal-subtitle">${w.ward} · Joined ${w.joined}</div>
         </div>
       </div>
-      <button class="btn btn-xs btn-ghost" onclick="closeModal()">✕</button>
+      <button class="btn btn-xs btn-ghost" data-action="close-modal">✕</button>
     </div>
     <div class="modal-body">
       <div class="g2" style="margin-bottom:1rem">
@@ -684,7 +684,7 @@ function getModalContent(type, id) {
         <div class="modal-title">${e.icon} ${e.title}</div>
         <div class="modal-subtitle">${e.ward} · ${e.time}</div>
       </div>
-      <button class="btn btn-xs btn-ghost" onclick="closeModal()">✕</button>
+      <button class="btn btn-xs btn-ghost" data-action="close-modal">✕</button>
     </div>
     <div class="modal-body">
       <div class="alert alert-${e.sev==='high'?'red':e.sev==='med'?'amber':'blue'}" style="margin-bottom:1rem">
@@ -702,7 +702,7 @@ function getModalContent(type, id) {
     return `
     <div class="modal-hd">
       <div><div class="modal-title">New Shift</div><div class="modal-subtitle">Create a new dispatch request</div></div>
-      <button class="btn btn-xs btn-ghost" onclick="closeModal()">✕</button>
+      <button class="btn btn-xs btn-ghost" data-action="close-modal">✕</button>
     </div>
     <div class="modal-body">
       <div class="g2" style="gap:.75rem;margin-bottom:.75rem">
@@ -718,11 +718,11 @@ function getModalContent(type, id) {
         <div class="fg"><label>Pay Rate</label><input placeholder="$19.14/hr" /></div>
         <div class="fg"><label>Workers Needed</label><input type="number" value="3" min="1" /></div>
       </div>
-      <button class="btn btn-md btn-ice" style="width:100%" onclick="closeModal();showToast('Shift created','New shift posted to worker pool','✅','#22c55e')">Create Shift</button>
+      <button class="btn btn-md btn-ice" style="width:100%" data-action="create-shift">Create Shift</button>
     </div>`;
   }
 
-  return `<div class="modal-hd"><div class="modal-title">Detail</div><button class="btn btn-xs btn-ghost" onclick="closeModal()">✕</button></div>
+  return `<div class="modal-hd"><div class="modal-title">Detail</div><button class="btn btn-xs btn-ghost" data-action="close-modal">✕</button></div>
   <div class="modal-body"><p style="color:var(--muted2)">No content for this modal.</p></div>`;
 }
 
@@ -734,7 +734,7 @@ function renderAdminSidebar(activePage) {
     <div class="sb-grp">
       <div class="sb-grp-lbl">${grp.group}</div>
       ${grp.items.map(item => `
-      <div class="sb-item ${activePage === item.id ? 'active' : ''}" onclick="navigate('${item.id}')">
+      <div class="sb-item ${activePage === item.id ? 'active' : ''}" data-nav="${esc(item.id)}">
         <span>${item.icon}</span>
         <span>${item.label}</span>
         ${item.badge ? `<span class="sb-badge ${item.badgeClass}">${item.badge}</span>` : ''}
