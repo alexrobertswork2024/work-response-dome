@@ -223,3 +223,90 @@ const SECURITY_PROTOCOL = Object.freeze({
     "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
   }),
 });
+
+// Runtime security helpers consumed by app.js/pages.js.
+(function installSecurityHelpers() {
+  function esc(value) {
+    if (value === null || value === undefined) return "";
+    const div = document.createElement("div");
+    div.textContent = String(value);
+    return div.innerHTML;
+  }
+
+  function safeSetText(el, value) {
+    if (!el) return;
+    el.textContent = value === null || value === undefined ? "" : String(value);
+  }
+
+  function safeRender(fn, context) {
+    try {
+      const rendered = typeof fn === "function" ? fn() : "";
+      return typeof rendered === "string" ? rendered : "";
+    } catch (error) {
+      const msg = `Render failed${context ? ` (${context})` : ""}`;
+      console.error(msg, error);
+      return `<div class=\"error-state\">${esc(msg)}</div>`;
+    }
+  }
+
+  const Validate = Object.freeze({
+    searchQuery(raw) {
+      const value = String(raw ?? "").replace(/\s+/g, " ").trim().slice(0, 80);
+      return { ok: true, value };
+    },
+
+    chatMessage(raw) {
+      const value = String(raw ?? "").replace(/\s+/g, " ").trim();
+      if (!value) return { ok: false, reason: "empty", value: "" };
+      if (value.length > 400) return { ok: false, reason: "Message exceeds 400 characters", value: "" };
+      return { ok: true, value };
+    },
+  });
+
+  const AppLog = Object.freeze({
+    info(message, details) {
+      if (details !== undefined) console.log(`[WORK RESPONSE] ${message}`, details);
+      else console.log(`[WORK RESPONSE] ${message}`);
+    },
+    security(message, details) {
+      if (details !== undefined) console.warn(`[WORK RESPONSE:SECURITY] ${message}`, details);
+      else console.warn(`[WORK RESPONSE:SECURITY] ${message}`);
+    },
+  });
+
+  const IntervalManager = (() => {
+    const ids = new Set();
+    return Object.freeze({
+      add(fn, ms) {
+        const id = window.setInterval(fn, ms);
+        ids.add(id);
+        return id;
+      },
+      clearAll() {
+        ids.forEach(id => window.clearInterval(id));
+        ids.clear();
+      },
+    });
+  })();
+
+  const HealthMonitor = (() => {
+    let renders = 0;
+    return Object.freeze({
+      recordRender() {
+        renders += 1;
+        return renders;
+      },
+      getRenderCount() {
+        return renders;
+      },
+    });
+  })();
+
+  window.esc = esc;
+  window.safeSetText = safeSetText;
+  window.safeRender = safeRender;
+  window.Validate = Validate;
+  window.AppLog = AppLog;
+  window.IntervalManager = IntervalManager;
+  window.HealthMonitor = HealthMonitor;
+})();

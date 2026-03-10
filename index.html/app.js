@@ -39,7 +39,7 @@ function renderNav() {
   const pages = ['dashboard','shifts','map','workers','analytics','payroll','comms','events'];
   c.innerHTML = pages.map(p => {
     const info = NAV_PAGES.find(x => x.id === p);
-    return `<button class="nav-btn ${currentPage===p?'active':''}" onclick="navigate('${p}')">${info?info.icon+' '+info.label:p}</button>`;
+    return `<button class="nav-btn ${currentPage===p?'active':''}" onclick="navigate('${p}')">${info ? `${esc(info.icon)} ${esc(info.label)}` : esc(p)}</button>`;
   }).join('') +
   `<button class="nav-btn ${currentPage==='health'?'active':''}" onclick="navigate('health')" title="Health">🛡️</button>`;
 }
@@ -50,7 +50,7 @@ function renderMobileNav() {
   const pages = ['home','dashboard','shifts','map','workers','health'];
   el.innerHTML = pages.map(p => {
     const info = NAV_PAGES.find(x => x.id === p) || { icon:'🛡️', label:'Health' };
-    return `<button class="mobile-nav-item ${currentPage===p?'active':''}" onclick="navigate('${p}')"><span style="font-size:1.15rem">${info.icon}</span>${info.label}</button>`;
+    return `<button class="mobile-nav-item ${currentPage===p?'active':''}" onclick="navigate('${p}')"><span style="font-size:1.15rem">${esc(info.icon)}</span>${esc(info.label)}</button>`;
   }).join('');
 }
 
@@ -65,10 +65,10 @@ function toggleNotif() {
     <div class="notif-hd"><div class="notif-title">Notifications</div><button class="btn btn-xs btn-ghost" onclick="toggleNotif()">✕</button></div>
     ${NOTIFICATIONS.map(n=>`
     <div class="notif-item ${n.unread?'unread':''}">
-      <div class="notif-icon" style="background:${n.iconBg}">${n.icon}</div>
-      <div style="flex:1"><div class="notif-text">${n.title}</div>
-      <div class="notif-text" style="font-size:.75rem;margin-top:.2rem">${n.text}</div>
-      <div class="notif-time">${n.time}</div></div>
+      <div class="notif-icon" style="background:${esc(n.iconBg)}">${esc(n.icon)}</div>
+      <div style="flex:1"><div class="notif-text">${esc(n.title)}</div>
+      <div class="notif-text" style="font-size:.75rem;margin-top:.2rem">${esc(n.text)}</div>
+      <div class="notif-time">${esc(n.time)}</div></div>
     </div>`).join('')}
     <div style="padding:.6rem 1rem;text-align:center"><button class="btn btn-xs btn-outline" onclick="toggleNotif()">Mark all read</button></div>`;
     const dot = document.getElementById('notif-dot');

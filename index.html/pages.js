@@ -209,13 +209,13 @@ function renderShiftRow(s) {
   <div class="shift-row-v15" style="--shift-color:${s.color}" onclick="showModal('shift-detail',${s.id})">
     <div class="shift-icon">${s.icon}</div>
     <div class="shift-info">
-      <div class="shift-name">${s.title}</div>
-      <div class="shift-meta">${s.ward} · ${s.time} · ${s.pay}</div>
+      <div class="shift-name">${esc(s.title)}</div>
+      <div class="shift-meta">${esc(s.ward)} · ${esc(s.time)} · ${esc(s.pay)}</div>
     </div>
     <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0">
-      <span class="p-chip ${s.priority==='P1'?'p-critical':s.priority==='P2'?'p-high':'p-normal'}">${s.priority}</span>
-      <span class="badge ${statusBadge}">${s.status}</span>
-      <span style="font-size:.75rem;color:var(--muted2);font-family:'IBM Plex Mono',monospace">${s.filled}/${s.workers}</span>
+      <span class="p-chip ${s.priority==='P1'?'p-critical':s.priority==='P2'?'p-high':'p-normal'}">${esc(s.priority)}</span>
+      <span class="badge ${statusBadge}">${esc(s.status)}</span>
+      <span style="font-size:.75rem;color:var(--muted2);font-family:'IBM Plex Mono',monospace">${esc(s.filled)}/${esc(s.workers)}</span>
       ${s.status === 'open' || s.status === 'urgent'
         ? `<button class="btn btn-xs btn-ice" onclick="event.stopPropagation();acceptShift(${s.id})">Accept</button>`
         : ''}
@@ -236,13 +236,13 @@ function renderMap() {
         </div>
       </div>
       ${MAP_WORKERS.map(w => `
-      <div class="map-worker-item ${w.status==='active'?'active':''}">
+        <div class="map-worker-item ${w.status==='active'?'active':''}">
         <div class="map-status-dot" style="background:${w.color}"></div>
         <div style="flex:1">
-          <div style="font-size:.84rem;font-weight:600;color:var(--ice4)">${w.name}</div>
-          <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted2)">${w.shift}</div>
+          <div style="font-size:.84rem;font-weight:600;color:var(--ice4)">${esc(w.name)}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:.62rem;color:var(--muted2)">${esc(w.shift)}</div>
         </div>
-        <span class="status-pill ${w.status==='active'?'onshift':w.status==='standby'?'away':'offline'}">${w.status}</span>
+        <span class="status-pill ${w.status==='active'?'onshift':w.status==='standby'?'away':'offline'}">${esc(w.status)}</span>
       </div>`).join('')}
     </div>
     <div class="map-main">
@@ -312,26 +312,26 @@ function renderWorkersTable(workers) {
         ${workers.map(w => `
         <tr>
           <td><div class="w-cell">
-            <div class="w-av" style="background:${w.bg};color:${w.color};border-color:${w.color}">${w.initials}</div>
+            <div class="w-av" style="background:${w.bg};color:${w.color};border-color:${w.color}">${esc(w.initials)}</div>
             <div>
-              <div style="font-weight:600;color:var(--ice4)">${w.name}</div>
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted2)">Joined ${w.joined}</div>
+              <div style="font-weight:600;color:var(--ice4)">${esc(w.name)}</div>
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:.6rem;color:var(--muted2)">Joined ${esc(w.joined)}</div>
             </div>
           </div></td>
-          <td style="color:var(--muted2)">${w.ward}</td>
-          <td><span class="status-pill ${w.status==='on-shift'?'onshift':w.status==='available'?'online':'offline'}">${w.status}</span></td>
+          <td style="color:var(--muted2)">${esc(w.ward)}</td>
+          <td><span class="status-pill ${w.status==='on-shift'?'onshift':w.status==='available'?'online':'offline'}">${esc(w.status)}</span></td>
           <td>
             <div style="color:${w.score>=90?'var(--green2)':w.score>=80?'var(--amber2)':'var(--red2)'}">
-              ${w.score}<span style="font-size:.7rem;color:var(--muted2)">/100</span>
+              ${esc(w.score)}<span style="font-size:.7rem;color:var(--muted2)">/100</span>
             </div>
           </td>
-          <td style="color:var(--ice3)">${w.shifts}</td>
-          <td style="color:var(--amber)">★ ${w.rating}</td>
-          <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--green2)">$${w.earnings.toLocaleString()}</td>
+          <td style="color:var(--ice3)">${esc(w.shifts)}</td>
+          <td style="color:var(--amber)">★ ${esc(w.rating)}</td>
+          <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700;color:var(--green2)">$${esc(w.earnings.toLocaleString())}</td>
           <td>
             <div style="display:flex;gap:.3rem">
               <button class="btn btn-xs btn-navy" onclick="showModal('worker-detail',${w.id})">View</button>
-              <button class="btn btn-xs btn-outline" onclick="showToast('Message sent','Direct message opened for ${w.name}','💬','#4db8ff')">Msg</button>
+              <button class="btn btn-xs btn-outline" onclick="showToast('Message sent','Direct message opened','💬','#4db8ff')">Msg</button>
             </div>
           </td>
         </tr>`).join('')}
